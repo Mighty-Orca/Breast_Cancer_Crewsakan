@@ -5,17 +5,17 @@ import pickle
 # ------------------------------
 # Load Model
 # ------------------------------
-with open("cancer_model.pkl", "rb") as file:
-    try:
+try:
+    with open("cancer_model.pkl", "rb") as file:
         model = pickle.load(file)
-    except Exception as e:
-        st.error("❌ Gagal memuat model. Kemungkinan ada dependency atau struktur yang hilang.")
-        st.exception(e)
+except FileNotFoundError:
+    st.error("❌ File 'cancer_model.pkl' tidak ditemukan. Pastikan file ini ada di direktori yang sama dengan app.py.")
+    st.stop()
+except Exception as e:
+    st.error("❌ Gagal load model. File corrupt atau tidak kompatibel.")
+    st.exception(e)
+    st.stop()
 
-        # Coba lihat byte awal dari file untuk investigasi
-        file.seek(0)
-        st.text(file.read(100))  # tampilkan byte awal
-        st.stop()
 
 # ------------------------------
 # UI Streamlit
