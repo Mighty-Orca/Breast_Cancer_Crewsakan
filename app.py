@@ -5,13 +5,16 @@ import pickle
 # ------------------------------
 # Load Model
 # ------------------------------
-@st.cache_resource
-def load_model():
+try:
     with open("cancer_model.pkl", "rb") as file:
         model = pickle.load(file)
-    return model
-
-model = load_model()
+except FileNotFoundError:
+    st.error(" File 'cancer_model.pkl' tidak ditemukan. Pastikan file ini ada di direktori yang sama dengan app.py.")
+    st.stop()
+except Exception as e:
+    st.error(" Gagal load model. File corrupt atau tidak kompatibel.")
+    st.exception(e)
+    st.stop()
 
 # ------------------------------
 # UI Streamlit
