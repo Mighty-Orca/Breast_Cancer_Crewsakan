@@ -2,44 +2,43 @@ import streamlit as st
 import numpy as np
 import joblib
 
-# Langsung load model dari file lokal
-model = joblib.load('cancer_model.pkl')
+# Load model
+model = joblib.load("cancer_model.joblib")
 
-st.set_page_config(page_title="Prediksi Kanker", layout="centered")
+# Set judul halaman
+st.set_page_config(page_title="Prediksi Kanker Payudara", layout="wide")
 st.title("🔬 Prediksi Kanker Payudara")
+st.markdown("Masukkan nilai dari 30 fitur diagnosis kanker payudara berdasarkan hasil medis (seperti MRI/biopsi).")
 
-# Form input
+# Fitur-fitur dari dataset Breast Cancer sklearn
+feature_names = [
+    "mean radius", "mean texture", "mean perimeter", "mean area", "mean smoothness",
+    "mean compactness", "mean concavity", "mean concave points", "mean symmetry", "mean fractal dimension",
+    "radius error", "texture error", "perimeter error", "area error", "smoothness error",
+    "compactness error", "concavity error", "concave points error", "symmetry error", "fractal dimension error",
+    "worst radius", "worst texture", "worst perimeter", "worst area", "worst smoothness",
+    "worst compactness", "worst concavity", "worst concave points", "worst symmetry", "worst fractal dimension"
+]
+
+# Bagi jadi 3 kolom biar enak dilihat
+cols = st.columns(3)
+input_data = []
+
+# Generate form input dari semua fitur
 with st.form("form_kanker"):
-    st.subheader("📋 Masukkan Data Pasien")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        radius_mean = st.number_input("Radius Mean", 0.0, 30.0)
-        texture_mean = st.number_input("Texture Mean", 0.0, 40.0)
-        perimeter_mean = st.number_input("Perimeter Mean", 0.0, 200.0)
-        area_mean = st.number_input("Area Mean", 0.0, 3000.0)
-        smoothness_mean = st.number_input("Smoothness Mean", 0.0, 1.0)
-
-    with col2:
-        compactness_mean = st.number_input("Compactness Mean", 0.0, 1.0)
-        concavity_mean = st.number_input("Concavity Mean", 0.0, 1.0)
-        concave_points_mean = st.number_input("Concave Points Mean", 0.0, 1.0)
-        symmetry_mean = st.number_input("Symmetry Mean", 0.0, 1.0)
-        fractal_dimension_mean = st.number_input("Fractal Dimension Mean", 0.0, 1.0)
+    for i, name in enumerate(feature_names):
+        val = cols[i % 3].number_input(label=name.title(), value=0.0)
+        input_data.append(val)
 
     submit = st.form_submit_button("🔍 Prediksi")
 
-# Prediksi
+# Prediksi setelah submit
 if submit:
-    input_data = np.array([[
-        radius_mean, texture_mean, perimeter_mean, area_mean,
-        smoothness_mean, compactness_mean, concavity_mean,
-        concave_points_mean, symmetry_mean, fractal_dimension_mean
-    ]])
+    input_array = np.array([input_data])
+    prediction = model.predict(input_array)[0]
 
-    prediction = model.predict(input_data)[0]
-
+    st.subheader("📢 Hasil Prediksi")
     if prediction == 1:
-        st.error("⚠️ Hasil: Positif Kanker")
+        st.error("⚠️ Positif Kanker")
     else:
-        st.success("✅ Hasil: Tidak Kanker")
+        st.success("✅ Tidak Terindikasi Kanker")
