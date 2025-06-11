@@ -1,59 +1,45 @@
 import streamlit as st
-import pandas as pd
-import pickle
+import numpy as np
+import joblib
 
-# ------------------------------
-# Load Model
-# ------------------------------
-model_file = st.file_uploader("📦 Upload Model (.pkl)", type=["pkl"])
+# Langsung load model dari file lokal
+model = joblib.load('cancer_model.pkl')
 
-if model_file is not None:
-    try:
-        model = pickle.load(model_file)  # langsung dari file uploader
-        st.success("✅ Model berhasil dimuat!")
-    except Exception as e:
-        st.error("❌ Gagal memuat model. Kemungkinan file rusak atau tidak cocok.")
-        st.exception(e)
-        st.stop()
-else:
-    st.warning("⬆️ Silakan upload model `.pkl` terlebih dahulu.")
-    st.stop()
-# ------------------------------
-# UI Streamlit
-# ------------------------------
-st.set_page_config(page_title="Prediksi Kanker", layout="wide")
-st.title("🔬 Aplikasi Prediksi Kanker")
-st.write("Upload data CSV dan dapatkan hasil prediksi apakah data menunjukkan kanker atau tidak.")
+st.set_page_config(page_title="Prediksi Kanker", layout="centered")
+st.title("🔬 Prediksi Kanker Payudara")
 
-# ------------------------------
-# Upload Data CSV
-# ------------------------------
-uploaded_file = st.file_uploader("📂 Upload file CSV", type=["csv"])
+# Form input
+with st.form("form_kanker"):
+    st.subheader("📋 Masukkan Data Pasien")
 
-if uploaded_file is not None:
-    data = pd.read_csv(uploaded_file)
-    st.subheader("🧾 Data yang Di-upload")
-    st.dataframe(data.head())
+    col1, col2 = st.columns(2)
+    with col1:
+        radius_mean = st.number_input("Radius Mean", 0.0, 30.0)
+        texture_mean = st.number_input("Texture Mean", 0.0, 40.0)
+        perimeter_mean = st.number_input("Perimeter Mean", 0.0, 200.0)
+        area_mean = st.number_input("Area Mean", 0.0, 3000.0)
+        smoothness_mean = st.number_input("Smoothness Mean", 0.0, 1.0)
 
-    # Cek apakah model bisa memproses data
-    try:
-        st.subheader("🧠 Hasil Prediksi")
-        predictions = model.predict(data)
-        data["Prediksi"] = predictions
-        st.dataframe(data)
+    with col2:
+        compactness_mean = st.number_input("Compactness Mean", 0.0, 1.0)
+        concavity_mean = st.number_input("Concavity Mean", 0.0, 1.0)
+        concave_points_mean = st.number_input("Concave Points Mean", 0.0, 1.0)
+        symmetry_mean = st.number_input("Symmetry Mean", 0.0, 1.0)
+        fractal_dimension_mean = st.number_input("Fractal Dimension Mean", 0.0, 1.0)
 
-        # Tambahkan ringkasan
-        st.success("✅ Prediksi berhasil dilakukan!")
-        st.write("**Keterangan:**")
-        st.write("- 0 = Tidak Kanker")
-        st.write("- 1 = Kanker")
+    submit = st.form_submit_button("🔍 Prediksi")
 
-        # Visualisasi ringkas
-        st.subheader("📊 Statistik Prediksi")
-        st.bar_chart(data["Prediksi"].value_counts())
+# Prediksi
+if submit:
+    input_data = np.array([[
+        radius_mean, texture_mean, perimeter_mean, area_mean,
+        smoothness_mean, compactness_mean, concavity_mean,
+        concave_points_mean, symmetry_mean, fractal_dimension_mean
+    ]])
 
-    except Exception as e:
-        st.error("⚠️ Gagal melakukan prediksi. Cek apakah format data cocok dengan model.")
-        st.exception(e)
-else:
-    st.info("⬆️ Silakan upload file CSV untuk mulai.")
+    prediction = model.predict(input_data)[0]
+
+    if prediction == 1:
+        st.error("⚠️ Hasil: Positif Kanker")
+    else:
+        st.success("✅ Hasil: Tidak Kanker")
