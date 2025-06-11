@@ -3,7 +3,7 @@ import numpy as np
 import joblib
 
 # Load model
-model = joblib.load("cancer_model.joblib")
+model = joblib.load("cancer_model.pkl")
 
 # Set judul halaman
 st.set_page_config(page_title="Prediksi Kanker Payudara", layout="wide")
